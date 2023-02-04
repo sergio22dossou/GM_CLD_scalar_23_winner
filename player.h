@@ -36,6 +36,6 @@ typedef struct timer {
     sfClock *clk;
     sfTime time;
     float seconds;
-}
+} timer;
 
 #endif
