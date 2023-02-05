@@ -20,6 +20,7 @@ typedef struct player {
 typedef struct backgrd {
     sfSprite *bgrd_spr;
     sfTexture *bgrd;
+    sfVector2f mv;
 } backgrd;
 
 typedef struct pm {
@@ -29,7 +30,7 @@ typedef struct pm {
 } pm;
 
 typedef struct platform {
-    pm ground[9];
+    pm ground[10];
 } platform;
 
 typedef struct timer {

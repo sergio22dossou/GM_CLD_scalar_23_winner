@@ -5,7 +5,12 @@
 ** window header
 */
 #include<SFML/Graphics/RenderWindow.h>
+#include<time.h>
+#include<SFML/System.h>
 #include <stdio.h>
+#include<SFML/Graphics.h>
+#include<SFML/Graphics/RenderWindow.h>
+#include<SFML/System.h>
 #include <SFML/Graphics.h>
 #ifndef WINDOW_H_
     #define WINDOW_H_

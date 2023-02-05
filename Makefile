@@ -12,7 +12,7 @@ NAME 	=	skala
 all: $(NAME)
 
 $(NAME):	$(SRC)
-	gcc $(SRC) -o $(NAME) -lcsfml-window -lcsfml-graphics -lcsfml-graphics
+	gcc $(SRC) -o $(NAME) -lcsfml-window -lcsfml-graphics -lcsfml-graphics -lcsfml-system
 
 clean:
 	rm -f *#
