@@ -15,6 +15,10 @@ typedef struct player {
     sfTexture *ply;
     sfVector2f pos;
     sfIntRect rect;
+    sfClock *set;
+    sfTime jump;
+    float se;
+    int state;
 } player;
 
 typedef struct backgrd {

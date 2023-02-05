@@ -9,6 +9,7 @@
 #include "player.h"
 #include <stdlib.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 void init_windata(window *ptr)
 {
@@ -28,11 +29,11 @@ void init_content(backgrd *run, backgrd *run2)
 {
     run->bgrd = sfTexture_createFromFile("ressources/Final/Background_0.png", NULL);
     run->bgrd_spr = sfSprite_create();
-    sfSprite_setTexture(run->bgrd_spr, run->bgrd, true);
+    sfSprite_setTexture(run->bgrd_spr, run->bgrd, sfTrue);
     sfSprite_setScale(run->bgrd_spr, (sfVector2f) {2, 2});
     run2->bgrd = sfTexture_createFromFile("ressources/Final/Background_1.png", NULL);
     run2->bgrd_spr = sfSprite_create();
-    sfSprite_setTexture(run2->bgrd_spr, run2->bgrd, true);
+    sfSprite_setTexture(run2->bgrd_spr, run2->bgrd, sfTrue);
     sfSprite_setScale(run2->bgrd_spr, (sfVector2f) {2, 2});
     run2->mv.x = 0;
     run2->mv.y = 0;
@@ -42,7 +43,7 @@ void init_ground(platform *grd, int x)
 {
     grd->ground[x].plt_frm = sfTexture_createFromFile("ressources/Final/plat.png", NULL);
     grd->ground[x].plt_frm_spr = sfSprite_create();
-    sfSprite_setTexture(grd->ground[x].plt_frm_spr, grd->ground[x].plt_frm, true);
+    sfSprite_setTexture(grd->ground[x].plt_frm_spr, grd->ground[x].plt_frm, sfTrue);
     sfSprite_setScale(grd->ground[x].plt_frm_spr, (sfVector2f) {2, 2});
     grd->ground[x].mv.x = 184 * (x - 1);
     grd->ground[x].mv.y = 720;
@@ -51,10 +52,12 @@ void init_ground(platform *grd, int x)
 
 void init_player(player *alex)
 {
+    alex->set = sfClock_create();
     alex->ply = sfTexture_createFromFile("ressources/alexio.png", NULL);
     alex->ply_spr = sfSprite_create();
-    sfSprite_setTexture(alex->ply_spr, alex->ply, true);
-    sfSprite_setPosition(alex->ply_spr, (sfVector2f) {0, 590});
+    sfSprite_setTexture(alex->ply_spr, alex->ply, sfTrue);
+    alex->pos.x = 0;alex->pos.y = 590;
+    sfSprite_setPosition(alex->ply_spr, alex->pos);
     sfSprite_setScale(alex->ply_spr, (sfVector2f) {2, 2});
     alex->rect.top = 0;
     alex->rect.left = 0;
@@ -119,6 +122,7 @@ void my_free(backgrd *run, backgrd *run2, platform *grd, player *alex)
     sfSprite_destroy(run->bgrd_spr);
     sfSprite_destroy(alex->ply_spr);
     sfSprite_destroy(run2->bgrd_spr);
+    sfClock_destroy(alex->set);
     for (int i = 0; i < 10; i++)
         sfSprite_destroy(grd->ground[i].plt_frm_spr);
     free(run2);
@@ -132,7 +136,33 @@ void draw_backgrd(backgrd *run, backgrd *run2, player *alex, window *ptr)
     sfRenderWindow_display(ptr->window);
     sfRenderWindow_drawSprite(ptr->window, run->bgrd_spr, NULL);
     sfRenderWindow_drawSprite(ptr->window, run2->bgrd_spr, NULL);
-    sfRenderWindow_drawSprite(ptr->window, alex->ply_spr, NULL);    
+    sfRenderWindow_drawSprite(ptr->window, alex->ply_spr, NULL);
+}
+
+void jump_mode(player *alex)
+{
+     if (alex->state == 1) {
+         alex->jump = sfClock_getElapsedTime(alex->set);
+         alex->se = alex->jump.microseconds / 100000;
+         if (alex->se > 0.8) {
+             sfSprite_move(alex->ply_spr,(sfVector2f) {0,-50});
+             alex->pos = sfSprite_getPosition(alex->ply_spr);
+             sfClock_restart(alex->set);
+         }
+     }
+     if (alex->pos.y < 500)
+         alex->state = 2;
+     if (alex->state == 2) {
+         alex->jump = sfClock_getElapsedTime(alex->set);
+         alex->se = alex->jump.microseconds / 100000;
+         if (alex->se > 0.8) {
+             sfSprite_move(alex->ply_spr,(sfVector2f) {0,50});
+             alex->pos = sfSprite_getPosition(alex->ply_spr);
+             sfClock_restart(alex->set);
+         }
+     }
+     if (alex->pos.y > 580)
+         alex->state = 0;
 }
 
 void game_event(window *ptr, platform *grd, player *alex, backgrd *run2, timer *chrono)
@@ -148,6 +178,9 @@ void game_event(window *ptr, platform *grd, player *alex, backgrd *run2, timer *
                 draw_grd_r(ptr, grd, run2);
             if (ptr->event.key.code == sfKeyLeft)
                 draw_grd_l(ptr, grd, run2);
+             if (ptr->event.key.code == sfKeyUp && alex->state == 0)
+                 //jump_mode(alex);
+                 alex->state++;
         }
         close_event(ptr);
     }
@@ -163,6 +196,7 @@ void windows(window *ptr)
     timer *chrono = (timer *)malloc(sizeof(timer));
     chrono->clk = sfClock_create();
     init_player(alex);
+    alex->state = 0;
     init_content(run, run2);
     for (int i = 0; i < 10; i++)
         init_ground(grd, i);
@@ -170,6 +204,7 @@ void windows(window *ptr)
         chrono->time = sfClock_getElapsedTime(chrono->clk);
         chrono->seconds = chrono->time.microseconds / 100000;
         draw_backgrd(run, run2, alex, ptr);
+        jump_mode(alex);
         for (int i = 0; i < 10; i++)
             sfRenderWindow_drawSprite(ptr->window, grd->ground[i].plt_frm_spr, NULL);
         game_event(ptr, grd, alex, run2, chrono);
