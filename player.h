@@ -43,4 +43,10 @@ typedef struct timer {
     float seconds;
 } timer;
 
+typedef struct obs_tkl {
+    sfTexture *obs;
+    sfSprite *obs_spr;
+    sfVector2f mv;
+} obs_tkl;
+
 #endif

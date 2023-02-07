@@ -10,6 +10,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include<SFML/Audio/Music.h>
+#include<SFML/Audio/SoundBuffer.h>
+#include<SFML/Audio/Sound.h>
+#include<SFML/System.h>
 
 void init_windata(window *ptr)
 {
@@ -56,7 +60,7 @@ void init_player(player *alex)
     alex->ply = sfTexture_createFromFile("ressources/alexio.png", NULL);
     alex->ply_spr = sfSprite_create();
     sfSprite_setTexture(alex->ply_spr, alex->ply, sfTrue);
-    alex->pos.x = 0;alex->pos.y = 590;
+    alex->pos.x = 80;alex->pos.y = 590;
     sfSprite_setPosition(alex->ply_spr, alex->pos);
     sfSprite_setScale(alex->ply_spr, (sfVector2f) {2, 2});
     alex->rect.top = 0;
@@ -71,15 +75,15 @@ void draw_grd_r(window *ptr, platform *grd, backgrd *run2)
     sfVector2f location;
     for (int i = 0; i < 10; i++) {
         location = sfSprite_getPosition(grd->ground[i].plt_frm_spr);
-        if (location.x < -249) {
+        if (location.x < -184) {
             grd->ground[i].mv.x = 1400;
             sfSprite_setPosition(grd->ground[i].plt_frm_spr, grd->ground[i].mv);
         } else {
-            grd->ground[i].mv.x -= 8;
+            grd->ground[i].mv.x -= 10;
             sfSprite_setPosition(grd->ground[i].plt_frm_spr, grd->ground[i].mv);
         }
     }
-    run2->mv.x -= 8;
+    run2->mv.x -= 10;
     sfSprite_setPosition(run2->bgrd_spr, run2->mv);
     if (run2->mv.x < -1694)
         run2->mv.x = 1400;
@@ -94,11 +98,11 @@ void draw_grd_l(window *ptr, platform *grd, backgrd *run2)
             grd->ground[i].mv.x = -184;
             sfSprite_setPosition(grd->ground[i].plt_frm_spr, grd->ground[i].mv);
         } else {
-            grd->ground[i].mv.x += 8;
+            grd->ground[i].mv.x += 10;
             sfSprite_setPosition(grd->ground[i].plt_frm_spr, grd->ground[i].mv);
         }
     }
-    run2->mv.x += 8;
+    run2->mv.x += 10;
     sfSprite_setPosition(run2->bgrd_spr, run2->mv);
     if (run2->mv.x > 1800)
         run2->mv.x = -1694;
@@ -176,11 +180,24 @@ void game_event(window *ptr, platform *grd, player *alex, backgrd *run2, timer *
             }
             if (ptr->event.key.code == sfKeyRight)
                 draw_grd_r(ptr, grd, run2);
-            if (ptr->event.key.code == sfKeyLeft)
+            else if (ptr->event.key.code == sfKeyLeft)
                 draw_grd_l(ptr, grd, run2);
-             if (ptr->event.key.code == sfKeyUp && alex->state == 0)
-                 //jump_mode(alex);
-                 alex->state++;
+            else if (ptr->event.key.code == sfKeyUp && alex->state == 0)
+                alex->state++;
+            else if (ptr->event.key.code == sfKeyDown) {
+                alex->rect.left = 225;
+                sfSprite_setTextureRect(alex->ply_spr, alex->rect);
+                sfRenderWindow_drawSprite(ptr->window, alex->ply_spr, NULL);
+                alex->rect.left = 0;
+            }
+        }
+        else {
+            if (alex->pos.y == 590) {
+                alex->rect.left = 180;
+                sfSprite_setTextureRect(alex->ply_spr, alex->rect);
+                sfRenderWindow_drawSprite(ptr->window, alex->ply_spr, NULL);
+                alex->rect.left = 0;
+            }
         }
         close_event(ptr);
     }
@@ -194,6 +211,8 @@ void windows(window *ptr)
     platform *grd = (platform *)malloc(sizeof(platform));
     player *alex = (player *)malloc(sizeof(player));
     timer *chrono = (timer *)malloc(sizeof(timer));
+    sfMusic *music = sfMusic_createFromFile("Shadow.ogg");
+    sfMusic_play(music);
     chrono->clk = sfClock_create();
     init_player(alex);
     alex->state = 0;
@@ -209,6 +228,7 @@ void windows(window *ptr)
             sfRenderWindow_drawSprite(ptr->window, grd->ground[i].plt_frm_spr, NULL);
         game_event(ptr, grd, alex, run2, chrono);
     }
+    sfMusic_destroy(music);
     my_free(run, run2, grd, alex);
     destroy_windata(ptr);
 }
