@@ -79,11 +79,11 @@ void draw_grd_r(window *ptr, platform *grd, backgrd *run2)
             grd->ground[i].mv.x = 1400;
             sfSprite_setPosition(grd->ground[i].plt_frm_spr, grd->ground[i].mv);
         } else {
-            grd->ground[i].mv.x -= 10;
+            grd->ground[i].mv.x -= 1;
             sfSprite_setPosition(grd->ground[i].plt_frm_spr, grd->ground[i].mv);
         }
     }
-    run2->mv.x -= 10;
+    run2->mv.x -= 1;
     sfSprite_setPosition(run2->bgrd_spr, run2->mv);
     if (run2->mv.x < -1694)
         run2->mv.x = 1400;
@@ -172,18 +172,18 @@ void jump_mode(player *alex)
 void game_event(window *ptr, platform *grd, player *alex, backgrd *run2, timer *chrono)
 {
     while (sfRenderWindow_pollEvent(ptr->window,&ptr->event)) {
-        if (ptr->event.type == sfEvtKeyPressed) {
+        /*if (ptr->event.type == sfEvtKeyPressed) {
             if (chrono->seconds > 0.1) {
                 move_rect(&alex->rect, 135);
                 sfSprite_setTextureRect(alex->ply_spr, alex->rect);
                 sfClock_restart(chrono->clk);
             }
-            if (ptr->event.key.code == sfKeyRight)
-                draw_grd_r(ptr, grd, run2);
+           // if (ptr->event.key.code == sfKeyRight)
+                //draw_grd_r(ptr, grd, run2);
             else if (ptr->event.key.code == sfKeyLeft)
                 draw_grd_l(ptr, grd, run2);
-            else if (ptr->event.key.code == sfKeyUp && alex->state == 0)
-                alex->state++;
+           // else if (ptr->event.key.code == sfKeyUp && alex->state == 0)
+             //   alex->state++;
             else if (ptr->event.key.code == sfKeyDown) {
                 alex->rect.left = 225;
                 sfSprite_setTextureRect(alex->ply_spr, alex->rect);
@@ -198,7 +198,7 @@ void game_event(window *ptr, platform *grd, player *alex, backgrd *run2, timer *
                 sfRenderWindow_drawSprite(ptr->window, alex->ply_spr, NULL);
                 alex->rect.left = 0;
             }
-        }
+        }*/
         close_event(ptr);
     }
 }
@@ -223,6 +223,37 @@ void windows(window *ptr)
         chrono->time = sfClock_getElapsedTime(chrono->clk);
         chrono->seconds = chrono->time.microseconds / 100000;
         draw_backgrd(run, run2, alex, ptr);
+        if (sfKeyboard_isKeyPressed(sfKeyRight) == sfTrue) {
+            if (chrono->seconds > 0.1) {
+                move_rect(&alex->rect, 135);
+                sfSprite_setTextureRect(alex->ply_spr, alex->rect);
+                sfClock_restart(chrono->clk);
+            }
+            draw_grd_r(ptr, grd, run2);
+        }
+        if (sfKeyboard_isKeyPressed(sfKeyUp) == sfTrue && alex->state == 0) {
+            if (chrono->seconds > 0.1) {
+                move_rect(&alex->rect, 135);
+                sfSprite_setTextureRect(alex->ply_spr, alex->rect);
+                sfClock_restart(chrono->clk);
+            }
+            alex->state++;
+        }
+        if (sfKeyboard_isKeyPressed(sfKeyDown) == sfFalse && sfKeyboard_isKeyPressed(sfKeyRight) == sfFalse
+        && sfKeyboard_isKeyPressed(sfKeyUp) == sfFalse) {
+            if (alex->pos.y == 590) {
+                alex->rect.left = 180;
+                sfSprite_setTextureRect(alex->ply_spr, alex->rect);
+                sfRenderWindow_drawSprite(ptr->window, alex->ply_spr, NULL);
+                alex->rect.left = 0;
+            }
+        }
+        if (sfKeyboard_isKeyPressed(sfKeyDown)) {
+            alex->rect.left = 225;
+                sfSprite_setTextureRect(alex->ply_spr, alex->rect);
+                sfRenderWindow_drawSprite(ptr->window, alex->ply_spr, NULL);
+                alex->rect.left = 0;
+        }
         jump_mode(alex);
         for (int i = 0; i < 10; i++)
             sfRenderWindow_drawSprite(ptr->window, grd->ground[i].plt_frm_spr, NULL);
