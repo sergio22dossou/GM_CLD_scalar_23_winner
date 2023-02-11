@@ -8,5 +8,5 @@
 #ifndef MY_H_
     #define MY_H_
     void close_event(window *ptr);
-    void windows(window *ptr);
+void windows(window *ptr, char *file);
 #endif

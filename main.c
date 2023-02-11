@@ -7,9 +7,11 @@
 #include "window.h"
 #include "my.h"
 
-int main(void)
+int main(int ac, char **av)
 {
+    if (ac != 2)
+        return 84;
     window ptr;
-    windows(&ptr);
+    windows(&ptr, av[1]);
     return (0);
 }

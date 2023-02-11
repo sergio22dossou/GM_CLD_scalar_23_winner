@@ -23,4 +23,7 @@ struct window {
     sfEvent event;
 };
 
+int my_cat(char *file);
+char **transcript(char *str);
+
 #endif
