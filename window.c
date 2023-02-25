@@ -6,21 +6,14 @@
 */
 #include "window.h"
 #include "my.h"
-#include "player.h"
-#include <stdlib.h>
-#include <stdbool.h>
-#include <unistd.h>
-#include<SFML/Audio/Music.h>
-#include<SFML/Audio/SoundBuffer.h>
-#include<SFML/Audio/Sound.h>
-#include<SFML/System.h>
+#include "monster.h"
 
 void init_windata(window *ptr)
 {
     ptr->mode.width = 1400;
     ptr->mode.height = 800;
     ptr->mode.bitsPerPixel = 32;
-    ptr->name = "Athene adventure";
+    ptr->name = "Journey in hell";
     ptr->window = sfRenderWindow_create(ptr->mode,ptr->name,sfDefaultStyle,NULL);
 }
 
@@ -28,10 +21,6 @@ void destroy_windata(window *ptr)
 {
     sfRenderWindow_destroy(ptr->window);
 }
-
-void init_content(backgrd *run, backgrd *run2);
-void init_ground(platform *grd, int x);
-void init_player(player *alex);
 
 void draw_grd_r(window *ptr, platform *grd, backgrd *run2)
 {
@@ -42,11 +31,11 @@ void draw_grd_r(window *ptr, platform *grd, backgrd *run2)
             grd->ground[i].mv.x = 1400;
             sfSprite_setPosition(grd->ground[i].plt_frm_spr, grd->ground[i].mv);
         } else {
-            grd->ground[i].mv.x -= 12;
+            grd->ground[i].mv.x -= 0.4;
             sfSprite_setPosition(grd->ground[i].plt_frm_spr, grd->ground[i].mv);
         }
     }
-    run2->mv.x -= 12;
+    run2->mv.x -= 0.4;
     sfSprite_setPosition(run2->bgrd_spr, run2->mv);
     if (run2->mv.x < -1694)
         run2->mv.x = 1400;
@@ -58,14 +47,14 @@ void draw_grd_l(window *ptr, platform *grd, backgrd *run2)
     for (int i = 0; i < 10; i++) {
         location = sfSprite_getPosition(grd->ground[i].plt_frm_spr);
         if (location.x > 1400) {
-            grd->ground[i].mv.x = -184;
+            grd->ground[i].mv.x = -186;
             sfSprite_setPosition(grd->ground[i].plt_frm_spr, grd->ground[i].mv);
         } else {
-            grd->ground[i].mv.x += 12;
+            grd->ground[i].mv.x += 0.4;
             sfSprite_setPosition(grd->ground[i].plt_frm_spr, grd->ground[i].mv);
         }
     }
-    run2->mv.x += 12;
+    run2->mv.x += 0.4;
     sfSprite_setPosition(run2->bgrd_spr, run2->mv);
     if (run2->mv.x > 1800)
         run2->mv.x = -1694;
@@ -111,18 +100,18 @@ void jump_mode(player *alex)
      if (alex->state == 1) {
          alex->jump = sfClock_getElapsedTime(alex->set);
          alex->se = alex->jump.microseconds / 100000;
-         if (alex->se > 0.8) {
+         if (alex->se > 0.7) {
              sfSprite_move(alex->ply_spr,(sfVector2f) {0,-50});
              alex->pos = sfSprite_getPosition(alex->ply_spr);
              sfClock_restart(alex->set);
          }
      }
-     if (alex->pos.y < 500)
+     if (alex->pos.y < 400)
          alex->state = 2;
      if (alex->state == 2) {
          alex->jump = sfClock_getElapsedTime(alex->set);
          alex->se = alex->jump.microseconds / 100000;
-         if (alex->se > 0.8) {
+         if (alex->se > 0.1) {
              sfSprite_move(alex->ply_spr,(sfVector2f) {0,50});
              alex->pos = sfSprite_getPosition(alex->ply_spr);
              sfClock_restart(alex->set);
@@ -132,73 +121,71 @@ void jump_mode(player *alex)
          alex->state = 0;
 }
 
-void game_event(window *ptr, platform *grd, player *alex, backgrd *run2, timer *chrono)
+void player_move(window *ptr, platform *grd, player *alex, backgrd *run2, timer *chrono, enemy *pt)
 {
-    while (sfRenderWindow_pollEvent(ptr->window,&ptr->event)) {
-        if (ptr->event.type == sfEvtKeyPressed) {
-            if (sfKeyboard_isKeyPressed(sfKeyLeft) == sfTrue) {
-                if (alex->pos.x > 300 && alex->pos.x < 810) {
-                    alex->pos.x -= 10;
-                    sfSprite_setPosition(alex->ply_spr, alex->pos);
-                } else
-                    draw_grd_l(ptr, grd, run2);
-                 if (chrono->seconds > 0.1) {
-                    move_rect(&alex->rect, 0, 135);
-                    sfSprite_setTextureRect(alex->ply_spr, alex->rect);
-                    sfClock_restart(chrono->clk);
-                }
-            }
-            if (sfKeyboard_isKeyPressed(sfKeyRight) == sfTrue) {
-                alex->pos = sfSprite_getPosition(alex->ply_spr);
-                if (alex->pos.x > 290 && alex->pos.x < 800) {
-                    alex->pos.x += 10;
-                    sfSprite_setPosition(alex->ply_spr, alex->pos);
-                } else
-                    draw_grd_r(ptr, grd, run2);
-                if (chrono->seconds > 0.1) {
-                    move_rect(&alex->rect, 0, 135);
-                    sfSprite_setTextureRect(alex->ply_spr, alex->rect);
-                    sfClock_restart(chrono->clk);
-                }
-            }
-            if (sfKeyboard_isKeyPressed(sfKeyUp) == sfTrue && alex->state == 0) {
-                if (chrono->seconds > 0.1) {
-                    move_rect(&alex->rect, 0, 135);
-                    sfSprite_setTextureRect(alex->ply_spr, alex->rect);
-                    sfClock_restart(chrono->clk);
-                }
-                alex->state++;
-            }
+    if (sfKeyboard_isKeyPressed(sfKeyLeft) == sfTrue) {
+        if (alex->pos.x > 300 && alex->pos.x < 810) {
+            alex->pos.x -= 0.4;
+            sfSprite_setPosition(alex->ply_spr, alex->pos);
+        } else {
+            draw_grd_l(ptr, grd, run2);
+            move_monster_r(pt);
+        } if (chrono->seconds > 0.1) {
+            move_rect(&alex->rect, 0, 135);
+            sfSprite_setTextureRect(alex->ply_spr, alex->rect);
+            sfClock_restart(chrono->clk);
         }
-        if (sfKeyboard_isKeyPressed(sfKeyDown) == sfFalse && sfKeyboard_isKeyPressed(sfKeyRight) == sfFalse
-            && sfKeyboard_isKeyPressed(sfKeyUp) == sfFalse && sfKeyboard_isKeyPressed(sfKeyLeft) == sfFalse) {
-            if (alex->pos.y == 590) {
-                alex->rect.left = 180;
-                sfSprite_setTextureRect(alex->ply_spr, alex->rect);
+    }
+    if (sfKeyboard_isKeyPressed(sfKeyRight) == sfTrue) {
+        alex->pos = sfSprite_getPosition(alex->ply_spr);
+        if (alex->pos.x > 290 && alex->pos.x < 800) {
+            alex->pos.x += 0.4;
+            sfSprite_setPosition(alex->ply_spr, alex->pos);
+        } else {
+            draw_grd_r(ptr, grd, run2);
+            move_monster_l(pt);
+        } if (chrono->seconds > 0.1) {
+            move_rect(&alex->rect, 0, 135);
+            sfSprite_setTextureRect(alex->ply_spr, alex->rect);
+            sfClock_restart(chrono->clk);
+        }
+    }
+    if (sfKeyboard_isKeyPressed(sfKeyUp) == sfTrue && alex->state == 0) {
+        if (chrono->seconds > 0.1) {
+            move_rect(&alex->rect, 0, 135);
+            sfSprite_setTextureRect(alex->ply_spr, alex->rect);
+            sfClock_restart(chrono->clk);
+        }
+        alex->state++;
+    }
+    if (sfKeyboard_isKeyPressed(sfKeyDown) == sfFalse && sfKeyboard_isKeyPressed(sfKeyRight) == sfFalse
+        && sfKeyboard_isKeyPressed(sfKeyUp) == sfFalse && sfKeyboard_isKeyPressed(sfKeyLeft) == sfFalse) {
+        if (alex->pos.y == 590) {
+            alex->rect.left = 180;
+            sfSprite_setTextureRect(alex->ply_spr, alex->rect);
                 sfRenderWindow_drawSprite(ptr->window, alex->ply_spr, NULL);
                 alex->rect.left = 0;
-            }
         }
-        if (sfKeyboard_isKeyPressed(sfKeyDown) && sfKeyboard_isKeyPressed(sfKeyUp) == sfFalse) {
-            alex->rect.left = 225;
-            sfSprite_setTextureRect(alex->ply_spr, alex->rect);
-            sfRenderWindow_drawSprite(ptr->window, alex->ply_spr, NULL);
-            alex->rect.left = 0;
-        }
-        close_event(ptr);
+    }
+    if (sfKeyboard_isKeyPressed(sfKeyDown) && sfKeyboard_isKeyPressed(sfKeyUp) == sfFalse && sfKeyboard_isKeyPressed(sfKeyRight) == sfFalse
+        && sfKeyboard_isKeyPressed(sfKeyLeft) == sfFalse) {
+        alex->rect.left = 225;
+        sfSprite_setTextureRect(alex->ply_spr, alex->rect);
+        sfRenderWindow_drawSprite(ptr->window, alex->ply_spr, NULL);
+        alex->rect.left = 0;
     }
 }
 
-void windows(window *ptr, char *file)
+void windows(window *ptr, char *file, enemy *pt)
 {
     init_windata(ptr);int count = 0;
-    obs_tkl *decor = (obs_tkl *)malloc(sizeof(obs_tkl) * my_cat(file));
     backgrd *run = (backgrd *)malloc(sizeof(backgrd));
     backgrd *run2 = (backgrd *)malloc(sizeof(backgrd));
     platform *grd = (platform *)malloc(sizeof(platform));
     player *alex = (player *)malloc(sizeof(player));
     timer *chrono = (timer *)malloc(sizeof(timer));
     timer *score = (timer *)malloc(sizeof(timer));
+    pt->prim = (monst*)malloc(sizeof(monst) * 3);
     sfMusic *music = sfMusic_createFromFile("Shadow.ogg");
     sfMusic_play(music);
     chrono->clk = sfClock_create();
@@ -206,6 +193,8 @@ void windows(window *ptr, char *file)
     init_player(alex);
     alex->state = 0;
     init_content(run, run2);
+    browse_tab("level1", pt);
+    init_monst_im(pt);
     for (int i = 0; i < 10; i++)
         init_ground(grd, i);
     while (sfRenderWindow_isOpen(ptr->window)) {
@@ -216,14 +205,20 @@ void windows(window *ptr, char *file)
         if (score->seconds > 1000000) {
             count++; sfClock_restart(score->clk);
         }
+        draw_monster(pt,ptr);
         draw_backgrd(run, run2, alex, ptr);
-        game_event(ptr, grd, alex, run2, chrono);
+        game_event(ptr);
         jump_mode(alex);
+        player_move(ptr,grd,alex,run2,chrono,pt);
+        for (int i = 0;i < 3;i++) {
+            sfRenderWindow_drawSprite(ptr->window,pt->prim[i].spr,NULL);
+        }
         for (int i = 0; i < 10; i++)
             sfRenderWindow_drawSprite(ptr->window, grd->ground[i].plt_frm_spr, NULL);
     }
+    destroy_monster(pt);
+    free(pt->prim);
     sfMusic_destroy(music);
-    free(decor);
     my_free(run, run2, grd, alex);
     destroy_windata(ptr);
 }

@@ -21,22 +21,25 @@ typedef struct player {
     int state;
 } player;
 
+/*structure pour le background */
 typedef struct backgrd {
     sfSprite *bgrd_spr;
     sfTexture *bgrd;
     sfVector2f mv;
 } backgrd;
 
+/*structure d'une platforme*/
 typedef struct pm {
     sfSprite *plt_frm_spr;
     sfTexture *plt_frm;
     sfVector2f mv;
 } pm;
-
+/*structure pour les platformes du bas*/
 typedef struct platform {
     pm ground[10];
 } platform;
 
+/*Timer général*/
 typedef struct timer {
     sfClock *clk;
     sfTime time;
