@@ -1,7 +1,8 @@
 on: [push]
 jobs:
-  test:
-   runs-on: ubuntu-latest
-   steps:
-   - run: date
+ runs-on: ubuntu-latest
+ steps:
+  - uses: actions/checkout
+  - echo "${{env.BRANCH_ENV}}"
+  - run: du -skh --exclude=".git"
 
