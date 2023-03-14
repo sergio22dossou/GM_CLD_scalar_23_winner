@@ -1,9 +1,9 @@
 on: [push]
 jobs:
  test:
- runs-on: ubuntu-latest
- steps:
-  - uses: actions/checkout
-  - echo "${{env.BRANCH_ENV}}"
-  - run: du -skh --exclude=".git"
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v3
+    - echo "${{env.BRANCH_ENV}}"
+    - run: du -skh --exclude=".git"
 
