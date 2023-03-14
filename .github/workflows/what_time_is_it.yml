@@ -1,0 +1,5 @@
+on: [push]
+jobs:
+    run-on: fedora-latest
+    steps:
+      -run: date
