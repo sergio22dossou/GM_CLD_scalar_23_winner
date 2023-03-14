@@ -1,0 +1,7 @@
+on: [push]
+jobs:
+ runs-on: ubuntu-latest
+ steps:
+  - uses: actions/checkout
+  - run: du -skh --exclude=".git"
+
