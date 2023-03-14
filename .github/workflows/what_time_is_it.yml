@@ -1,5 +1,7 @@
 on: [push]
 jobs:
-  runs-on: fedora-latest
-  steps:
-  - run: date
+  tests:
+   runs-on: fedora-latest
+   steps:
+   - run: date
+
